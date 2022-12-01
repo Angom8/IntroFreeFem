@@ -1,0 +1,33 @@
+/*Maillage du lanceur spatial*/
+
+//sommets
+real x0 = -2.0, y0 = 7.0;
+real x1 = -2.0, y1 = 4.0;
+real x2 = -1.0, y2 = 3.0;
+real x3 = -1.0, y3 = 0.0;
+real x4 = 1.0, y4 = 0.0;
+real x5 = 1.0, y5 = 3.0;
+real x6 = 2.0, y6 = 4.0;
+real x7 = 2.0, y7 = 7.0;
+real x8 = x0, y8 = y0;
+
+//0 = Conditions de Dirichlet
+//1 = Conditions de Fourier / Robin
+//2 = Conditions de Neumann
+
+border b1(t=0,1) {x = (1-t)*x0 + t*x1;y = (1-t)*y0 + t*y1;label= 2;}
+border b2(t=0,1) {x = (1-t)*x1 + t*x2;y = (1-t)*y1 + t*y2;label= 1;}
+border b3(t=0,1) {x = (1-t)*x2 + t*x3;y = (1-t)*y2 + t*y3;label= 2;}
+
+border chapeau(t=-pi,0){x=x3+1+cos(t); y=y3+sin(t); label=1;}
+
+border b4(t=0,1) {x = (1-t)*x4 + t*x5;y = (1-t)*y4 + t*y5;label= 2;}
+border b5(t=0,1) {x = (1-t)*x5 + t*x6;y = (1-t)*y5 + t*y6;label= 1;}
+border b6(t=0,1) {x = (1-t)*x6 + t*x7;y = (1-t)*y6 + t*y7;label= 2;}
+border b7(t=0,1) {x = (1-t)*x7 + t*x8;y = (1-t)*y7 + t*y8;label= 0;}
+
+mesh th = buildmesh(b1(20) + b2(20) + b3(20) + chapeau(40) + b4(20) + b5(20) + b6(20) + b7(20)) ;
+
+plot(th);
+
+savemesh(th,"lanceur.msh");

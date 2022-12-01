@@ -1,0 +1,54 @@
+//temperature.ffem
+mesh th = readmesh("lanceur.msh");
+
+real v;
+cout << "Vitesse de la fusee ? :" << endl;
+cin >> v;
+cout << endl << "La vitesse sera de " << v << endl;
+
+if(v < 0){
+	v = 10^3;
+}
+
+real e;
+cout << "Epaisseur du bouclier ? :" << endl ;
+cin >> e;
+cout << "L'epaisseur du bouclier sera de " << e << endl;
+
+if(e < 0){
+	e = 0.5;
+}
+
+real uE = 0.001 * (v^2); //température extérieure dépendant de la vitesse
+real uD = 20; //température au bord de Dirichlet
+func f = -0.5*exp(-(x^2 + y^2)); //fonction source pour la température
+int CodeDir = 0;
+int CodeF = 1;
+int CodeN = 2;
+
+//différentes conductivités pour tester
+real ka = 250; // Conductivité thermique de l'alliage
+real kb1 = 200; // Conductivité thermique du bouclier avec de l'aluminium
+real kb2 = 36.2; // Conductivité thermique du bouclier avec de l'acier au carbone
+real kb3 = 0.188; // Conductivité thermique du bouclier avec de l'amiante (0,188)
+
+real alpha = kb3/e;
+//si pénalisation du bord de Dirichlet
+real beta = 10^8;
+
+fespace Vh(th, P1); // Espace éléments finis
+Vh uh, vh; 
+
+problem PbLAPLACE(uh, vh, solver = Cholesky) // Mise en place de la formulation variationnelle
+    = int2d(th)(dx(uh)*dx(vh) + dy(uh)*dy(vh))
+    - int2d(th)(f*vh)
+    +int1d(th,1)(alpha*uh*vh) //Ajout des termes de bords Fourier-Robin
+    -int1d(th,1)(alpha*uE*vh)
+    +int1d(th,0)(beta*uh*vh) 
+    -int1d(th,0)(beta*uD*vh);//Pénalisation de la condition de Dirichlet
+
+PbLAPLACE;
+
+cout << "uE = " <<uE << endl;
+cout << "uh = " <<uh[] << endl;
+plot(th, uh, cmm="Solution uh", fill=true, value=true);
